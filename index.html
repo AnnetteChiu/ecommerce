@@ -1,0 +1,1060 @@
+{% extends "base.html" %}
+
+{% block title %}Content Dashboard - Dynamic Content Manager{% endblock %}
+
+{% block content %}
+<!-- Hero Banner Section -->
+<div class="hero-banner">
+    <div class="hero-background">
+        <div class="hero-particles"></div>
+        <div class="hero-gradient"></div>
+    </div>
+    <div class="container">
+        <div class="row align-items-center min-vh-60">
+            <div class="col-lg-6 col-md-8">
+                <div class="hero-content">
+                    <div class="hero-badge mb-3">
+                        <span class="badge-new">
+                            <i class="fas fa-sparkles me-1"></i>
+                            Latest Updates
+                        </span>
+                    </div>
+                    
+                    <h1 class="hero-title mb-4">
+                        Discover Amazin 
+                        <span class="text-gradient">Products</span> & 
+                        <span class="text-gradient">Content</span>
+                    </h1>
+                    
+                    <p class="hero-subtitle mb-4">
+                        Explore our comprehensive marketplace featuring the latest arrivals, 
+                        premium products, and personalized recommendations tailored just for you.
+                    </p>
+                    
+                    <div class="hero-stats mb-4">
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-number" id="product-count">{{ total_products or 0 }}</div>
+                                    <div class="stat-label">{{ get_translation('products', current_language) }}</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-number" id="new-arrivals-count">{{ new_arrivals_count or 0 }}</div>
+                                    <div class="stat-label">New This Week</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-number" id="content-count">{{ total_content or 0 }}</div>
+                                    <div class="stat-label">{{ get_translation('articles', current_language) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-actions">
+                        <div class="btn-group-hero">
+                            <a href="{{ url_for('shop') }}" class="btn btn-hero-primary">
+                                <i class="fas fa-store me-2"></i>
+                                {{ get_translation('shop_now', current_language) }}
+                                <span class="btn-arrow">→</span>
+                            </a>
+                            <a href="{{ url_for('new_arrivals') }}" class="btn btn-hero-secondary">
+                                <i class="fas fa-sparkles me-2"></i>
+                                {{ get_translation('new_arrivals', current_language) }}
+                            </a>
+
+                        </div>
+                    </div>
+                    
+                    <div class="hero-features mt-4">
+                        <div class="feature-tags">
+                            <span class="feature-tag">
+                                <i class="fas fa-shipping-fast me-1"></i>
+                                {{ get_translation('fast_delivery', current_language) }}
+                            </span>
+                            <span class="feature-tag">
+                                <i class="fas fa-heart me-1"></i>
+                                {{ get_translation('wishlist', current_language) }}
+                            </span>
+                            <span class="feature-tag">
+                                <i class="fas fa-star me-1"></i>
+                                {{ get_translation('reviews', current_language) }}
+                            </span>
+                            <span class="feature-tag">
+                                <i class="fas fa-robot me-1"></i>
+                                {{ get_translation('ai_recommendations', current_language) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="hero-visual">
+                    <div class="floating-cards">
+                        <!-- Product Preview Cards -->
+                        <div class="floating-card card-1">
+                            <div class="card-mini">
+                                <div class="card-image bg-gradient-primary"></div>
+                                <div class="card-content">
+                                    <div class="card-title"></div>
+                                    <div class="card-price">$99</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="floating-card card-2">
+                            <div class="card-mini">
+                                <div class="card-image bg-gradient-success"></div>
+                                <div class="card-content">
+                                    <div class="card-title"></div>
+                                    <div class="card-price">$149</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="floating-card card-3">
+                            <div class="card-mini">
+                                <div class="card-image bg-gradient-warning"></div>
+                                <div class="card-content">
+                                    <div class="card-title"></div>
+                                    <div class="card-price">$79</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Feature Icons -->
+                        <div class="floating-icon icon-1">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="floating-icon icon-2">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="floating-icon icon-3">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fashion Banner Section -->
+<div class="fashion-banner-section py-5 bg-light">
+    <div class="container">
+        <div class="fashion-banner">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="fashion-content">
+                        <div class="fashion-badge mb-3">
+                            <span class="badge bg-dark text-white px-3 py-2">
+                                <i class="fas fa-crown me-1"></i>
+                                Premium Fashion Collection
+                            </span>
+                        </div>
+                        
+                        <h2 class="fashion-title display-5 fw-bold mb-3">
+                            Elevate Your 
+                            <span class="text-primary">Style</span>
+                        </h2>
+                        
+                        <p class="fashion-description lead mb-4 text-muted">
+                            Discover curated fashion pieces that define elegance and sophistication. 
+                            From timeless classics to contemporary trends, find your signature look.
+                        </p>
+                        
+                        <div class="fashion-features mb-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="feature-item d-flex align-items-center">
+                                        <div class="feature-icon me-3">
+                                            <div class="icon-circle bg-primary">
+                                                <i class="fas fa-shipping-fast text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Free Shipping</div>
+                                            <small class="text-muted">Orders over $50</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="feature-item d-flex align-items-center">
+                                        <div class="feature-icon me-3">
+                                            <div class="icon-circle bg-success">
+                                                <i class="fas fa-undo text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Easy Returns</div>
+                                            <small class="text-muted">30-day guarantee</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="feature-item d-flex align-items-center">
+                                        <div class="feature-icon me-3">
+                                            <div class="icon-circle bg-warning">
+                                                <i class="fas fa-medal text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Premium Quality</div>
+                                            <small class="text-muted">Verified materials</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="fashion-cta">
+                            <a href="{{ url_for('shop', category='Clothing') }}" class="btn btn-dark btn-lg me-3">
+                                <i class="fas fa-tshirt me-2"></i>
+                                Shop Fashion
+                            </a>
+                            <a href="{{ url_for('new_arrivals') }}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-sparkles me-2"></i>
+                                New Arrivals
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="fashion-showcase mt-5 mt-lg-0">
+                        <div class="showcase-grid">
+                            {% set fashion_products = [] %}
+                            {% if products %}
+                                {% for product in products[:12] %}
+                                    {% if product.category in ['Clothing', 'Accessories', 'Shoes'] %}
+                                        {% set _ = fashion_products.append(product) %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            
+                            {% if fashion_products %}
+                                {% for product in fashion_products[:6] %}
+                                <div class="showcase-item">
+                                    <div class="showcase-card">
+                                        {% if product.image_url %}
+                                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="showcase-image">
+                                        {% else %}
+                                        <div class="showcase-placeholder">
+                                            <i class="fas fa-tshirt"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div class="showcase-overlay">
+                                            <div class="showcase-price">${{ "%.0f"|format(product.price) }}</div>
+                                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="showcase-link">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                        {% if product.is_new_arrival %}
+                                        <div class="showcase-badge">
+                                            <span class="badge bg-warning">New</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <!-- Showcase placeholders when no fashion products available -->
+                                <div class="showcase-item">
+                                    <div class="showcase-card">
+                                        <div class="showcase-placeholder">
+                                            <i class="fas fa-tshirt"></i>
+                                        </div>
+                                        <div class="showcase-overlay">
+                                            <div class="showcase-price">Fashion</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="showcase-item">
+                                    <div class="showcase-card">
+                                        <div class="showcase-placeholder">
+                                            <i class="fas fa-hat-cowboy"></i>
+                                        </div>
+                                        <div class="showcase-overlay">
+                                            <div class="showcase-price">Accessories</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="showcase-item">
+                                    <div class="showcase-card">
+                                        <div class="showcase-placeholder">
+                                            <i class="fas fa-shoe-prints"></i>
+                                        </div>
+                                        <div class="showcase-overlay">
+                                            <div class="showcase-price">Shoes</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fashion Trends Section -->
+<div class="fashion-trends-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title fw-bold mb-3">
+                <i class="fas fa-fire me-2 text-warning"></i>
+                Trending Fashion
+            </h2>
+            <p class="section-subtitle text-muted">
+                Discover what's hot in fashion right now
+            </p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Trending Category 1 -->
+            <div class="col-lg-4 col-md-6">
+                <div class="trend-card">
+                    <div class="trend-image">
+                        <div class="trend-placeholder bg-gradient-primary">
+                            <i class="fas fa-tshirt trend-icon"></i>
+                        </div>
+                        <div class="trend-badge">
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-trending-up me-1"></i>Trending
+                            </span>
+                        </div>
+                    </div>
+                    <div class="trend-content">
+                        <h4 class="trend-title">Casual Wear</h4>
+                        <p class="trend-description">Comfortable and stylish everyday fashion</p>
+                        <div class="trend-stats">
+                            <span class="stat">
+                                <i class="fas fa-heart text-danger me-1"></i>
+                                245 likes
+                            </span>
+                            <span class="stat">
+                                <i class="fas fa-eye text-info me-1"></i>
+                                1.2K views
+                            </span>
+                        </div>
+                        <a href="{{ url_for('shop', category='Clothing') }}" class="btn btn-outline-primary btn-sm mt-2">
+                            Explore Collection
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trending Category 2 -->
+            <div class="col-lg-4 col-md-6">
+                <div class="trend-card">
+                    <div class="trend-image">
+                        <div class="trend-placeholder bg-gradient-success">
+                            <i class="fas fa-hat-cowboy trend-icon"></i>
+                        </div>
+                        <div class="trend-badge">
+                            <span class="badge bg-success">
+                                <i class="fas fa-star me-1"></i>Popular
+                            </span>
+                        </div>
+                    </div>
+                    <div class="trend-content">
+                        <h4 class="trend-title">Accessories</h4>
+                        <p class="trend-description">Complete your look with perfect accessories</p>
+                        <div class="trend-stats">
+                            <span class="stat">
+                                <i class="fas fa-heart text-danger me-1"></i>
+                                189 likes
+                            </span>
+                            <span class="stat">
+                                <i class="fas fa-eye text-info me-1"></i>
+                                980 views
+                            </span>
+                        </div>
+                        <a href="{{ url_for('shop', category='Accessories') }}" class="btn btn-outline-success btn-sm mt-2">
+                            Shop Accessories
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trending Category 3 -->
+            <div class="col-lg-4 col-md-6">
+                <div class="trend-card">
+                    <div class="trend-image">
+                        <div class="trend-placeholder bg-gradient-info">
+                            <i class="fas fa-shoe-prints trend-icon"></i>
+                        </div>
+                        <div class="trend-badge">
+                            <span class="badge bg-info">
+                                <i class="fas fa-bolt me-1"></i>Hot
+                            </span>
+                        </div>
+                    </div>
+                    <div class="trend-content">
+                        <h4 class="trend-title">Footwear</h4>
+                        <p class="trend-description">Step up your style with trendy shoes</p>
+                        <div class="trend-stats">
+                            <span class="stat">
+                                <i class="fas fa-heart text-danger me-1"></i>
+                                312 likes
+                            </span>
+                            <span class="stat">
+                                <i class="fas fa-eye text-info me-1"></i>
+                                1.5K views
+                            </span>
+                        </div>
+                        <a href="{{ url_for('shop', category='Shoes') }}" class="btn btn-outline-info btn-sm mt-2">
+                            Browse Shoes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fashion Tips Section -->
+        <div class="fashion-tips mt-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="tips-content">
+                        <h3 class="tips-title mb-3">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Fashion Tips & Styling
+                        </h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="tip-item">
+                                    <div class="tip-icon">
+                                        <i class="fas fa-palette"></i>
+                                    </div>
+                                    <div class="tip-text">
+                                        <strong>Color Coordination</strong>
+                                        <p class="mb-0 text-muted">Learn to mix and match colors for stunning outfits</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="tip-item">
+                                    <div class="tip-icon">
+                                        <i class="fas fa-ruler"></i>
+                                    </div>
+                                    <div class="tip-text">
+                                        <strong>Perfect Fit</strong>
+                                        <p class="mb-0 text-muted">Find your ideal size and style for every occasion</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <div class="tips-cta">
+                        <div class="cta-icon mb-3">
+                            <i class="fas fa-graduation-cap text-primary"></i>
+                        </div>
+                        <h5>Style Guide</h5>
+                        <p class="text-muted mb-3">Get personalized fashion advice</p>
+                        <a href="{{ url_for('shop') }}" class="btn btn-primary">
+                            <i class="fas fa-book-open me-2"></i>
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Newsletter Subscription Section -->
+<div class="newsletter-subscription-section py-5 mb-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="newsletter-card">
+                    <div class="text-center mb-4">
+                        <div class="newsletter-icon mb-3">
+                            <i class="fas fa-envelope-open-text"></i>
+                        </div>
+                        <h3 class="newsletter-title">
+                            {{ get_translation('newsletter_subscription', current_language) }}
+                        </h3>
+                        <p class="newsletter-description text-muted">
+                            {{ get_translation('newsletter_description', current_language) }}
+                        </p>
+                    </div>
+                    
+                    <div class="newsletter-benefits mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="benefit-item">
+                                    <i class="fas fa-star text-warning"></i>
+                                    <span>{{ get_translation('personalized_product_picks', current_language) }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="benefit-item">
+                                    <i class="fas fa-palette text-info"></i>
+                                    <span>{{ get_translation('styling_tips_guides', current_language) }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="benefit-item">
+                                    <i class="fas fa-tag text-success"></i>
+                                    <span>{{ get_translation('exclusive_offers', current_language) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('newsletter_subscribe') }}" class="btn btn-primary btn-lg newsletter-cta">
+                            <i class="fas fa-envelope me-2"></i>
+                            {{ get_translation('subscribe_to_newsletter', current_language) }}
+                        </a>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                {{ get_translation('newsletter_privacy_notice', current_language) }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-responsive">
+    <!-- Featured Products Banner -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="featured-products-banner">
+                <div class="banner-container">
+                    <div class="banner-header text-center mb-4">
+                        <h2 class="visual-hierarchy-2 mb-2">
+                            <span class="text-gradient">{{ get_translation('featured_products', current_language) }}</span>
+                        </h2>
+                        <p class="text-muted">{{ get_translation('discover', current_language) }} {{ get_translation('premium', current_language) }} {{ get_translation('selection', current_language) }}</p>
+                    </div>
+                    
+                    <div class="row g-4">
+                        {% for product in featured_products[:3] %}
+                        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+                            <div class="product-banner-card enhanced-card">
+                                <!-- Product Image -->
+                                <div class="banner-image-container">
+                                    {% if product.image_url %}
+                                        <img src="{{ product.image_url }}" 
+                                             class="banner-product-image" 
+                                             alt="{{ product.name }}">
+                                    {% else %}
+                                        <div class="banner-placeholder-image">
+                                            <i class="fas fa-image fa-3x text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Product Badges -->
+                                    <div class="banner-badges">
+                                        {% if product.is_new_arrival %}
+                                        <span class="badge badge-enhanced badge-new">
+                                            <i class="fas fa-star"></i>
+                                            New
+                                        </span>
+                                        {% endif %}
+                                        {% if product.is_seasonal and product.is_currently_seasonal %}
+                                        <span class="badge badge-enhanced badge-seasonal">
+                                            <i class="fas fa-snowflake"></i>
+                                            Seasonal
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Quick Action Overlay -->
+                                    <div class="banner-overlay">
+                                        <div class="banner-actions">
+                                            <button class="btn btn-sm btn-outline-light me-2" 
+                                                    onclick="addToWishlist({{ product.id }})" 
+                                                    title="Add to Wishlist">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+                                            <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                               class="btn btn-sm btn-light" 
+                                               title="Quick View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Product Info -->
+                                <div class="banner-product-info">
+                                    <div class="product-meta-enhanced">
+                                        <span class="badge bg-light text-dark">{{ product.category }}</span>
+                                        <div class="product-rating">
+                                            {% for i in range(5) %}
+                                            <i class="fas fa-star text-warning"></i>
+                                            {% endfor %}
+                                            <small class="text-muted ms-1">(4.8)</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="product-title mb-2">
+                                        <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                           class="text-decoration-none text-dark product-title-link">
+                                            {{ product.name }}
+                                        </a>
+                                    </h5>
+                                    
+                                    <p class="product-description text-muted small mb-3">
+                                        {{ product.description[:80] }}{% if product.description|length > 80 %}...{% endif %}
+                                    </p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="price-enhanced">${{ "%.2f"|format(product.price) }}</div>
+                                        {% if product.stock_quantity > 0 or product.product_type == 'digital' %}
+                                        <span class="text-success small">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            {% if product.product_type == 'digital' %}Digital{% else %}In Stock{% endif %}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-danger small">
+                                            <i class="fas fa-times-circle me-1"></i>
+                                            Out of Stock
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="banner-product-actions">
+                                        {% if current_user.is_authenticated %}
+                                            {% if product.stock_quantity > 0 or product.product_type == 'digital' %}
+                                            <form action="{{ url_for('add_to_cart') }}" method="POST" class="d-grid">
+                                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                                <input type="hidden" name="quantity" value="1">
+                                                <button type="submit" class="btn btn-primary-enhanced">
+                                                    <i class="fas fa-cart-plus me-2"></i>
+                                                    {{ get_translation('add_to_cart', current_language) }}
+                                                </button>
+                                            </form>
+                                            {% else %}
+                                            <button class="btn btn-secondary w-100" disabled>
+                                                <i class="fas fa-times me-2"></i>
+                                                {{ get_translation('out_of_stock', current_language) }}
+                                            </button>
+                                            {% endif %}
+                                        {% else %}
+                                        <a href="{{ url_for('replit_auth.login') }}" 
+                                           class="btn btn-outline-enhanced w-100">
+                                            <i class="fas fa-sign-in-alt me-2"></i>
+                                            {{ get_translation('login', current_language) }}
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- View All Products CTA -->
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('shop') }}" class="btn btn-outline-enhanced btn-lg">
+                            <i class="fas fa-store me-2"></i>
+                            {{ get_translation('view_all', current_language) }} {{ get_translation('products', current_language) }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="quick-actions-bar">
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{{ url_for('create_content') }}" class="quick-action-btn">
+                        <i class="fas fa-pen-fancy"></i>
+                        <span>{{ get_translation('create', current_language) }} {{ get_translation('content', current_language) }}</span>
+                    </a>
+                    <a href="{{ url_for('create_product') }}" class="quick-action-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>{{ get_translation('add_product', current_language) }}</span>
+                    </a>
+                    <a href="{{ url_for('advanced_search') }}" class="quick-action-btn">
+                        <i class="fas fa-search-plus"></i>
+                        <span>{{ get_translation('advanced_search', current_language) }}</span>
+                    </a>
+                    <a href="{{ url_for('trading_view') }}" class="quick-action-btn">
+                        <i class="fas fa-chart-line"></i>
+                        <span>{{ get_translation('analytics', current_language) }}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Limited-Time Stories Section -->
+    {% if stories %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card slide-in-up">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clock me-2 text-warning"></i>
+                        限時動態 / Limited-Time Stories
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for story in stories %}
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="story-card h-100">
+                                {% if story.image_url %}
+                                <div class="story-image" style="background-image: url('{{ story.image_url }}');">
+                                    <div class="story-overlay">
+                                        <span class="story-type-badge">{{ story.story_type }}</span>
+                                        <span class="story-time-badge">{{ story.time_remaining }}</span>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="story-image story-no-image">
+                                    <div class="story-overlay">
+                                        <span class="story-type-badge">{{ story.story_type }}</span>
+                                        <span class="story-time-badge">{{ story.time_remaining }}</span>
+                                    </div>
+                                    <div class="story-icon">
+                                        {% if story.story_type == 'product' %}
+                                        <i class="fas fa-shopping-bag fa-2x"></i>
+                                        {% elif story.story_type == 'event' %}
+                                        <i class="fas fa-calendar-alt fa-2x"></i>
+                                        {% elif story.story_type == 'news' %}
+                                        <i class="fas fa-newspaper fa-2x"></i>
+                                        {% else %}
+                                        <i class="fas fa-bolt fa-2x"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="story-content">
+                                    <h6 class="story-title">{{ story.title }}</h6>
+                                    {% if story.content %}
+                                    <p class="story-description">{{ story.content[:60] }}{% if story.content|length > 60 %}...{% endif %}</p>
+                                    {% endif %}
+                                    
+                                    <div class="story-meta">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ story.author_name }}
+                                        </small>
+                                        {% if story.product %}
+                                        <div class="mt-2">
+                                            <a href="{{ url_for('product_detail', product_id=story.product.id) }}" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-shopping-cart me-1"></i>查看商品
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filters Section - Mobile Optimized -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card slide-in-up">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-sliders-h me-2 text-info"></i>
+                        Filters
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('index') }}" class="row g-2 g-md-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <label for="search" class="form-label">
+                                <i class="fas fa-search me-1 text-muted"></i>
+                                Search
+                            </label>
+                            <input type="text" class="form-control touch-target" id="search" name="search" 
+                                   value="{{ current_search }}" placeholder="Search content...">
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <label for="category" class="form-label">
+                                <i class="fas fa-folder me-1 text-muted"></i>
+                                Category
+                            </label>
+                            <select class="form-select touch-target" id="category" name="category">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category }}" {% if category == current_category %}selected{% endif %}>
+                                        {{ category }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">
+                            <i class="fas fa-traffic-light me-1 text-muted"></i>
+                            Status
+                        </label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">All Statuses</option>
+                            {% for status in statuses %}
+                                <option value="{{ status }}" {% if status == current_status %}selected{% endif %}>
+                                    {{ status }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-secondary me-2">
+                            <i class="fas fa-search me-1"></i>
+                            Filter
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>
+                            Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Personalized Recommendations (for logged-in users) -->
+{% if current_user.is_authenticated and recommendations %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-magic me-2"></i>
+                    Recommended for You
+                </h5>
+                <small class="opacity-75">Based on your interests and reading patterns</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                {% for rec in recommendations[:4] %}
+                    <div class="col-12 col-sm-6 col-lg-3 mb-3">
+                        <div class="card h-100 border-0 shadow-sm" data-content-id="{{ rec.id }}">
+                            {% if rec.image %}
+                                <div class="card-img-top" style="height: 120px; overflow: hidden;">
+                                    <img src="{{ url_for('uploaded_file', filename=rec.image) }}" 
+                                         class="img-responsive" 
+                                         style="object-fit: cover; width: 100%; height: 100%;" 
+                                         alt="{{ rec.title }}">
+                                </div>
+                            {% endif %}
+                            <div class="card-body p-3">
+                                <h6 class="card-title">{{ rec.title }}</h6>
+                                <p class="card-text small text-muted">
+                                    {{ rec.content[:80] }}{% if rec.content|length > 80 %}...{% endif %}
+                                </p>
+                                <a href="{{ url_for('view_content', content_id=rec.id) }}" class="btn btn-sm btn-outline-primary touch-target">
+                                    Read More
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('personalized_recommendations') }}" class="btn btn-primary">
+                        <i class="fas fa-sparkles me-2"></i>
+                        View All Recommendations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+    <!-- Content Grid - Mobile Optimized -->
+    <div class="row">
+        <div class="col-12 col-xl-9">
+            <div class="content-grid row g-3 g-md-4">
+            {% if content %}
+                {% for content_id, content_item in content.items() %}
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-4">
+                    <div class="card content-card h-100 fade-in hover-lift" data-content-id="{{ content_id }}">
+                        {% if content_item.image %}
+                            <div class="card-img-top" style="height: 200px; overflow: hidden;">
+                                <img src="{{ url_for('uploaded_file', filename=content_item.image) }}" 
+                                     class="img-responsive" 
+                                     style="object-fit: cover; width: 100%; height: 100%;" 
+                                     alt="{{ content_item.title }}">
+                            </div>
+                        {% endif %}
+                    <div class="card-header d-flex justify-content-between align-items-start">
+                        <h6 class="mb-0">{{ content_item.title }}</h6>
+                        <span class="badge status-badge 
+                                   {% if content_item.status == 'Published' %}bg-success
+                                   {% elif content_item.status == 'Draft' %}bg-warning
+                                   {% else %}bg-secondary{% endif %}">
+                            {% if content_item.status == 'Published' %}
+                                <i class="fas fa-globe me-1"></i>
+                            {% elif content_item.status == 'Draft' %}
+                                <i class="fas fa-edit me-1"></i>
+                            {% else %}
+                                <i class="fas fa-archive me-1"></i>
+                            {% endif %}
+                            {{ content_item.status }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text content-preview text-muted">
+                            {{ content_item.content[:150] }}{% if content_item.content|length > 150 %}...{% endif %}
+                        </p>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-folder me-1"></i>
+                                {{ content_item.category }}
+                            </small>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>
+                                {{ content_item.author }}
+                            </small>
+                        </div>
+                        
+                        {% if content_item.tags %}
+                            <div class="mb-3">
+                                <i class="fas fa-tags me-2 text-muted"></i>
+                                {% for tag in content_item.tags[:3] %}
+                                    <span class="badge bg-light text-dark tag-badge me-1 border">{{ tag }}</span>
+                                {% endfor %}
+                                {% if content_item.tags|length > 3 %}
+                                    <span class="badge bg-secondary tag-badge">+{{ content_item.tags|length - 3 }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="text-muted small mb-3">
+                            <i class="fas fa-clock me-1"></i>
+                            Created: {{ content_item.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% if content_item.updated_at != content_item.created_at %}
+                                <br>
+                                <i class="fas fa-edit me-1"></i>
+                                Updated: {{ content_item.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex flex-column flex-sm-row gap-2 w-100">
+                            <a href="{{ url_for('view_content', content_id=content_id) }}" 
+                               class="btn btn-outline-primary btn-sm touch-target flex-fill">
+                                <i class="fas fa-book-open me-1"></i>
+                                <span class="hidden-mobile">Read More</span>
+                                <span class="visible-mobile">Read</span>
+                            </a>
+                            {% if current_user.is_authenticated and content_item.user_id == current_user.id %}
+                                <a href="{{ url_for('edit_content', content_id=content_id) }}" 
+                                   class="btn btn-outline-secondary btn-sm touch-target flex-fill">
+                                    <i class="fas fa-pen me-1"></i>
+                                    Edit
+                                </a>
+                                <button type="button" class="btn btn-outline-danger btn-sm touch-target flex-fill" 
+                                        onclick="confirmDelete({{ content_id }}, '{{ content_item.title }}')">
+                                    <i class="fas fa-trash-alt me-1"></i>
+                                    <span class="hidden-mobile">Delete</span>
+                                    <span class="visible-mobile">Del</span>
+                                </button>
+                            {% else %}
+                                <span class="btn btn-outline-secondary btn-sm disabled flex-fill">
+                                    <i class="fas fa-user me-1"></i>
+                                    <span class="hidden-mobile">{{ content_item.author }}</span>
+                                    <span class="visible-mobile">Author</span>
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-file-alt fa-5x text-muted mb-3"></i>
+                    <h4>No Content Found</h4>
+                    <p class="text-muted">
+                        {% if current_search or current_category or current_status %}
+                            No content matches your current filters. <a href="{{ url_for('index') }}">Clear filters</a> to see all content.
+                        {% else %}
+                            Start by creating your first piece of content.
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('create_content') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Create Content
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+
+
+</div>
+
+<!-- Floating Action Button -->
+<a href="{{ url_for('create_content') }}" class="fab btn btn-primary d-flex align-items-center justify-content-center" 
+   title="Create New Content" data-bs-toggle="tooltip" data-bs-placement="left">
+    <i class="fas fa-plus fa-lg"></i>
+</a>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteContentTitle"></strong>?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>
+                        Delete Content
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(contentId, contentTitle) {
+    document.getElementById('deleteContentTitle').textContent = contentTitle;
+    document.getElementById('deleteForm').action = `/delete/${contentId}`;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+</script>
+{% endblock %}

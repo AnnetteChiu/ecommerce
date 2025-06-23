@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}{{ story.get_localized_title(session.get('language', 'en')) }} - Limited-Time Story{% endblock %}
+
+{% block content %}
+<div class="container-responsive">
+    <!-- Story Hero Section -->
+    <div class="story-hero text-center" style="background: linear-gradient(135deg, {{ story.background_color or '#007bff' }}, #6f42c1);">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 mb-3" style="color: {{ story.text_color or '#ffffff' }};">
+                        {{ story.get_localized_title(session.get('language', 'en')) }}
+                    </h1>
+                    
+                    <!-- Story Meta -->
+                    <div class="story-meta d-inline-block">
+                        <div class="d-flex flex-wrap justify-content-center align-items-center gap-3">
+                            <!-- Story Type -->
+                            <span class="badge bg-{{ 'primary' if story.story_type == 'general' else 'success' if story.story_type == 'product' else 'warning' if story.story_type == 'event' else 'info' }} story-type-badge">
+                                {% if story.story_type == 'general' %}
+                                    <i class="fas fa-star me-1"></i>General
+                                {% elif story.story_type == 'product' %}
+                                    <i class="fas fa-shopping-bag me-1"></i>Product
+                                {% elif story.story_type == 'event' %}
+                                    <i class="fas fa-calendar me-1"></i>Event
+                                {% elif story.story_type == 'news' %}
+                                    <i class="fas fa-newspaper me-1"></i>News
+                                {% else %}
+                                    <i class="fas fa-bullhorn me-1"></i>Promotion
+                                {% endif %}
+                            </span>
+                            
+                            <!-- Time Remaining -->
+                            {% if not story.is_expired() %}
+                            <span class="badge bg-warning text-dark time-badge pulse-animation">
+                                <i class="fas fa-clock me-1"></i>{{ story.time_remaining_korean() }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger time-badge">
+                                <i class="fas fa-times me-1"></i>Expired
+                            </span>
+                            {% endif %}
+                            
+                            <!-- Author -->
+                            <span class="text-light">
+                                <i class="fas fa-user me-1"></i>{{ story.author_name }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Story Content -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                {% if story.image_url %}
+                <div class="card-img-top">
+                    <img src="{{ story.image_url }}" alt="{{ story.title }}" class="img-fluid w-100" style="height: 300px; object-fit: cover; border-radius: 0.5rem 0.5rem 0 0;">
+                </div>
+                {% endif %}
+                
+                <div class="card-body p-4">
+                    <!-- Story Stats -->
+                    <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded">
+                        <div class="d-flex gap-4">
+                            <div class="text-center">
+                                <div class="fw-bold text-primary">{{ story.view_count }}</div>
+                                <small class="text-muted"><i class="fas fa-eye me-1"></i>Views</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="fw-bold text-success">{{ story.click_count }}</div>
+                                <small class="text-muted"><i class="fas fa-mouse-pointer me-1"></i>Clicks</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="fw-bold text-danger">{{ story.like_count }}</div>
+                                <small class="text-muted"><i class="fas fa-heart me-1"></i>Likes</small>
+                            </div>
+                        </div>
+                        <div class="text-muted small">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ story.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                    </div>
+                    
+                    <!-- Story Content -->
+                    <div class="story-content">
+                        <p class="lead">{{ story.get_localized_content(session.get('language', 'en')) }}</p>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 mt-4">
+                        {% if story.linked_product_id and not story.is_expired() %}
+                        <a href="{{ url_for('story_click', story_id=story.id) }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            View Product
+                        </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-danger" onclick="likeStory({{ story.id }})">
+                            <i class="fas fa-heart me-1"></i>
+                            Like Story
+                        </button>
+                        
+                        <button class="btn btn-outline-secondary" onclick="shareStory()">
+                            <i class="fas fa-share me-1"></i>
+                            Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back to Stories -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('stories') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Stories
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function likeStory(storyId) {
+    // Simple like functionality (could be enhanced with AJAX)
+    const btn = event.target;
+    btn.innerHTML = '<i class="fas fa-heart me-1"></i>Liked!';
+    btn.classList.remove('btn-outline-danger');
+    btn.classList.add('btn-danger');
+    btn.disabled = true;
+}
+
+function shareStory() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ story.title }}',
+            text: '{{ story.content[:100] }}...',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href);
+        alert('링크가 클립보드에 복사되었습니다! Link copied to clipboard!');
+    }
+}
+</script>
+{% endblock %}

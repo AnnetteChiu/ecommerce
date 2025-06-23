@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Newsletter Subscription - {{ get_translation('site_name') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header Section -->
+            <div class="text-center mb-5">
+                <h1 class="h2 text-primary mb-3">
+                    <i class="fas fa-envelope-open-text me-2"></i>
+                    {{ get_translation('newsletter_subscription') }}
+                </h1>
+                <p class="lead text-muted">
+                    {{ get_translation('newsletter_description') }}
+                </p>
+            </div>
+
+            <!-- Subscription Form -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        {{ get_translation('subscribe_to_newsletter') }}
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('newsletter_subscribe') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-envelope"></i>
+                                        </span>
+                                        {{ form.email(class="form-control", placeholder="your@email.com") }}
+                                    </div>
+                                    {% if form.email.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.email.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.first_name.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                        {{ form.first_name(class="form-control", placeholder="Your first name") }}
+                                    </div>
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.first_name.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fashion Preferences -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-tshirt me-2"></i>
+                                {{ get_translation('fashion_preferences') }}
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        {{ form.preferred_categories.label(class="form-label") }}
+                                        <div class="border rounded p-3 bg-light">
+                                            {% for category in form.preferred_categories %}
+                                                <div class="form-check">
+                                                    {{ category(class="form-check-input") }}
+                                                    {{ category.label(class="form-check-label") }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% if form.preferred_categories.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in form.preferred_categories.errors %}
+                                                    <div>{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        {{ form.style_preferences.label(class="form-label") }}
+                                        <div class="border rounded p-3 bg-light">
+                                            {% for style in form.style_preferences %}
+                                                <div class="form-check">
+                                                    {{ style(class="form-check-input") }}
+                                                    {{ style.label(class="form-check-label") }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% if form.style_preferences.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in form.style_preferences.errors %}
+                                                    <div>{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Size and Budget Preferences -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    {{ form.size_range.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-ruler"></i>
+                                        </span>
+                                        {{ form.size_range(class="form-select") }}
+                                    </div>
+                                    {% if form.size_range.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.size_range.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    {{ form.budget_range.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-won-sign"></i>
+                                        </span>
+                                        {{ form.budget_range(class="form-select") }}
+                                    </div>
+                                    {% if form.budget_range.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.budget_range.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    {{ form.frequency.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </span>
+                                        {{ form.frequency(class="form-select") }}
+                                    </div>
+                                    {% if form.frequency.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.frequency.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Color Preferences -->
+                        <div class="mb-4">
+                            <div class="form-group">
+                                {{ form.color_preferences.label(class="form-label") }}
+                                <small class="text-muted">(Optional)</small>
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="row">
+                                        {% for color in form.color_preferences %}
+                                            <div class="col-md-3 col-sm-4 col-6">
+                                                <div class="form-check">
+                                                    {{ color(class="form-check-input") }}
+                                                    {{ color.label(class="form-check-label") }}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% if form.color_preferences.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.color_preferences.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Newsletter Benefits -->
+                        <div class="alert alert-info mb-4">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-star me-2"></i>
+                                {{ get_translation('newsletter_benefits') }}
+                            </h6>
+                            <ul class="mb-0">
+                                <li>{{ get_translation('personalized_fashion_recommendations') }}</li>
+                                <li>{{ get_translation('exclusive_style_tips') }}</li>
+                                <li>{{ get_translation('early_access_new_arrivals') }}</li>
+                                <li>{{ get_translation('seasonal_fashion_trends') }}</li>
+                                <li>{{ get_translation('special_discounts_offers') }}</li>
+                            </ul>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            {{ form.submit(class="btn btn-primary btn-lg px-5") }}
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    {{ get_translation('newsletter_privacy_notice') }}
+                                </small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Newsletter Preview -->
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-eye me-2"></i>
+                        {{ get_translation('newsletter_preview') }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">{{ get_translation('weekly_fashion_inspiration') }}</h6>
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-check text-success me-2"></i>{{ get_translation('trending_fashion_items') }}</li>
+                                <li><i class="fas fa-check text-success me-2"></i>{{ get_translation('styling_tips_guides') }}</li>
+                                <li><i class="fas fa-check text-success me-2"></i>{{ get_translation('personalized_product_picks') }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">{{ get_translation('exclusive_offers') }}</h6>
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-check text-success me-2"></i>{{ get_translation('member_only_discounts') }}</li>
+                                <li><i class="fas fa-check text-success me-2"></i>{{ get_translation('early_sale_access') }}</li>
+                                <li><i class="fas fa-check text-success me-2"></i>{{ get_translation('limited_edition_alerts') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.input-group-text {
+    background-color: var(--bs-light);
+    border-color: var(--bs-border-color);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--bs-primary), #6f42c1);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #6f42c1, var(--bs-primary));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+    border: none;
+    border-left: 4px solid var(--bs-info);
+}
+
+.bg-light {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef) !important;
+}
+</style>
+{% endblock %}

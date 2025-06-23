@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Product Details{% endblock %}
+
+{% block head %}
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="product">
+<meta property="og:url" content="{{ request.url }}">
+<meta property="og:title" content="{{ product.name }} - ₩{{ '{:,.0f}'.format(product.price) }}">
+<meta property="og:description" content="{{ product.description[:160] }}{% if product.description|length > 160 %}...{% endif %}">
+<meta property="og:image" content="{{ request.url_root.rstrip('/') }}{{ product.image_url if product.image_url else '/static/uploads/default-product.png' }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Discover Amazin">
+<meta property="product:price:amount" content="{{ product.price }}">
+<meta property="product:price:currency" content="KRW">
+<meta property="product:availability" content="{% if product.is_digital or product.stock_quantity > 0 %}in stock{% else %}out of stock{% endif %}">
+<meta property="product:condition" content="new">
+<meta property="product:brand" content="Discover Amazin">
+<meta property="product:category" content="{{ product.category }}">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="{{ request.url }}">
+<meta name="twitter:title" content="{{ product.name }} - ₩{{ '{:,.0f}'.format(product.price) }}">
+<meta name="twitter:description" content="{{ product.description[:200] }}{% if product.description|length > 200 %}...{% endif %}">
+<meta name="twitter:image" content="{{ request.url_root.rstrip('/') }}{{ product.image_url if product.image_url else '/static/uploads/default-product.png' }}">
+<meta name="twitter:image:alt" content="{{ product.name }}">
+
+<!-- Additional SEO -->
+<meta name="description" content="{{ product.description[:160] }}{% if product.description|length > 160 %}...{% endif %}">
+<meta name="keywords" content="{{ product.name }}, {{ product.category }}, online shopping, ecommerce">
+<link rel="canonical" href="{{ request.url }}">
+
+<!-- Schema.org structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ product.name }}",
+  "image": [
+    "{{ request.url_root.rstrip('/') }}{{ product.image_url if product.image_url else '/static/uploads/default-product.png' }}"
+  ],
+  "description": "{{ product.description }}",
+  "brand": {
+    "@type": "Brand",
+    "name": "Discover Amazin"
+  },
+  "category": "{{ product.category }}",
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ request.url }}",
+    "priceCurrency": "KRW",
+    "price": "{{ product.price }}",
+    "availability": "{% if product.is_digital or product.stock_quantity > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+    "itemCondition": "https://schema.org/NewCondition"
+  }{% if average_rating %},
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ average_rating }}",
+    "reviewCount": "{{ review_count }}"
+  }{% endif %}
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.image_url %}
+            <img src="{{ product.image_url }}" class="img-fluid rounded" alt="{{ product.name }}">
+            {% else %}
+            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
+                <i class="fas fa-image fa-5x text-muted"></i>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            
+            <div class="mb-3">
+                <span class="badge bg-secondary fs-6">{{ product.category }}</span>
+            </div>
+            
+            <h2 class="text-primary mb-3 product-price" data-category="{{ product.category }}">${{ "%.2f"|format(product.price) }}</h2>
+            
+            <p class="lead">{{ product.description }}</p>
+            
+            <div class="mb-4">
+                {% if product.is_digital %}
+                <span class="badge bg-info">Digital Product</span>
+                {% elif product.stock_quantity > 0 %}
+                <span class="badge bg-success">{{ product.stock_quantity }} in stock</span>
+                {% else %}
+                <span class="badge bg-danger">Out of Stock</span>
+                {% endif %}
+            </div>
+            
+            {% if current_user.is_authenticated %}
+                {% if product.is_digital or product.stock_quantity > 0 %}
+                <form method="POST" action="{{ url_for('add_to_cart') }}">
+                    {{ form.hidden_tag() }}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            {{ form.quantity(class="form-control") }}
+                        </div>
+                        <div class="col-8">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <button class="btn btn-secondary btn-lg" disabled>Out of Stock</button>
+                {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Please <a href="{{ url_for('replit_auth.login') }}">log in</a> to purchase this product.
+            </div>
+            {% endif %}
+            
+            <!-- Social Sharing -->
+            <div class="mt-4">
+                <h6 class="mb-3">
+                    <i class="fas fa-share-alt me-2"></i>
+                    {{ get_translation('share_product', current_language) }}
+                </h6>
+                <div class="social-share-buttons">
+                    <button class="btn btn-outline-primary social-share-btn" data-platform="facebook" 
+                            data-url="{{ request.url }}" 
+                            data-title="{{ product.name }}" 
+                            data-description="{{ product.description[:160] }}"
+                            data-image="{{ request.url_root.rstrip('/') }}{{ product.image_url }}">
+                        <i class="fab fa-facebook-f me-2"></i>Facebook
+                    </button>
+                    <button class="btn btn-outline-info social-share-btn" data-platform="twitter" 
+                            data-url="{{ request.url }}" 
+                            data-title="{{ product.name }} - ₩{{ '{:,.0f}'.format(product.price) }}" 
+                            data-description="{{ product.description[:100] }}">
+                        <i class="fab fa-twitter me-2"></i>Twitter
+                    </button>
+                    <button class="btn btn-outline-success social-share-btn" data-platform="whatsapp" 
+                            data-url="{{ request.url }}" 
+                            data-title="{{ product.name }}" 
+                            data-description="Check out this amazing product: {{ product.name }} for ₩{{ '{:,.0f}'.format(product.price) }}">
+                        <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                    </button>
+                    <button class="btn btn-outline-secondary social-share-btn" data-platform="copy" 
+                            data-url="{{ request.url }}">
+                        <i class="fas fa-link me-2"></i>{{ get_translation('copy_link', current_language) }}
+                    </button>
+                </div>
+                
+                <!-- Social Share Preview Modal -->
+                <div class="modal fade" id="sharePreviewModal" tabindex="-1" aria-labelledby="sharePreviewModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="sharePreviewModalLabel">
+                                    <i class="fas fa-eye me-2"></i>Share Preview
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="sharePreviewContent">
+                                    <!-- Dynamic preview content will be inserted here -->
+                                </div>
+                                <div class="mt-3">
+                                    <button id="confirmShareBtn" class="btn btn-primary">
+                                        <i class="fas fa-share me-2"></i>Share Now
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <small class="text-muted">
+                    <i class="fas fa-user me-1"></i>
+                    Sold by {{ product.seller.first_name or product.seller.email }}
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Similar Products -->
+    {% if similar_products %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="fas fa-thumbs-up me-2 text-success"></i>
+                Similar Products
+            </h4>
+            <div class="row">
+                {% for rec in similar_products %}
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card h-100">
+                        {% if rec.product.image_url %}
+                        <img src="{{ rec.product.image_url }}" class="card-img-top" alt="{{ rec.product.name }}" 
+                             style="height: 150px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                             style="height: 150px;">
+                            <i class="fas fa-image text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">{{ rec.product.name }}</h6>
+                            <p class="card-text small text-muted">{{ rec.reason }}</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h6 text-primary mb-0">${{ "%.2f"|format(rec.product.price) }}</span>
+                                    <a href="{{ url_for('product_detail', product_id=rec.product.id) }}" 
+                                       class="btn btn-sm btn-primary">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="{{ url_for('shop') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Shop
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// User engagement tracking for product views
+class ProductEngagementTracker {
+    constructor(productId) {
+        this.productId = productId;
+        this.startTime = Date.now();
+        this.scrollDepth = 0;
+        this.clickedImages = false;
+        this.viewedReviews = false;
+        this.isTracking = true;
+        
+        this.initializeTracking();
+    }
+    
+    initializeTracking() {
+        // Track scroll depth
+        window.addEventListener('scroll', this.trackScrollDepth.bind(this));
+        
+        // Track image clicks
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('click', () => {
+                this.clickedImages = true;
+            });
+        });
+        
+        // Track reviews section viewing
+        const reviewsSection = document.querySelector('#reviews-section, .reviews');
+        if (reviewsSection) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        this.viewedReviews = true;
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            observer.observe(reviewsSection);
+        }
+        
+        // Send engagement data before page unload
+        window.addEventListener('beforeunload', () => {
+            this.sendEngagementData();
+        });
+        
+        // Send periodic updates every 30 seconds
+        this.trackingInterval = setInterval(() => {
+            this.sendEngagementData();
+        }, 30000);
+        
+        // Send heartbeat to keep session active
+        this.heartbeatInterval = setInterval(() => {
+            this.sendHeartbeat();
+        }, 60000); // Every minute
+    }
+    
+    trackScrollDepth() {
+        const scrollTop = window.pageYOffset;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const currentDepth = (scrollTop / docHeight) * 100;
+        
+        if (currentDepth > this.scrollDepth) {
+            this.scrollDepth = Math.min(currentDepth, 100);
+        }
+    }
+    
+    sendEngagementData() {
+        if (!this.isTracking) return;
+        
+        const duration = Math.floor((Date.now() - this.startTime) / 1000);
+        
+        const engagementData = {
+            type: 'product',
+            item_id: this.productId,
+            duration: duration,
+            scroll_depth: this.scrollDepth / 100,
+            clicked_images: this.clickedImages,
+            viewed_reviews: this.viewedReviews
+        };
+        
+        // Use navigator.sendBeacon for reliable sending
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/track-engagement', JSON.stringify(engagementData));
+        } else {
+            // Fallback for older browsers
+            fetch('/api/track-engagement', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(engagementData),
+                keepalive: true
+            }).catch(err => console.log('Engagement tracking failed:', err));
+        }
+    }
+    
+    sendHeartbeat() {
+        if (!this.isTracking) return;
+        
+        fetch('/api/session-heartbeat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).catch(err => console.log('Heartbeat failed:', err));
+    }
+    
+    stopTracking() {
+        this.isTracking = false;
+        if (this.trackingInterval) clearInterval(this.trackingInterval);
+        if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+        this.sendEngagementData(); // Final update
+    }
+}
+
+// Initialize tracking when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const productId = {{ product.id }};
+    window.engagementTracker = new ProductEngagementTracker(productId);
+});
+
+// Track cart additions
+function trackCartAddition() {
+    if (window.engagementTracker) {
+        // Update session metrics for cart addition
+        fetch('/api/session-heartbeat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'cart_addition',
+                product_id: {{ product.id }}
+            })
+        }).catch(err => console.log('Cart tracking failed:', err));
+    }
+}
+
+// Add event listener to add to cart button
+document.addEventListener('DOMContentLoaded', function() {
+    const addToCartButton = document.querySelector('button[type="submit"]');
+    if (addToCartButton) {
+        addToCartButton.addEventListener('click', trackCartAddition);
+    }
+});
+</script>
+{% endblock %}

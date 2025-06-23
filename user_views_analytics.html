@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}사용자 조회 분석 - {{ get_translation('site_name') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-0">
+                        <i class="fas fa-chart-line text-primary me-2"></i>
+                        사용자 조회 분석
+                    </h1>
+                    <p class="text-muted mt-2">제품 및 콘텐츠 조회수 데이터 분석</p>
+                </div>
+                
+                <!-- Date Range Filter -->
+                <div class="d-flex gap-2">
+                    <select class="form-select" id="dateRange" onchange="updateDateRange()">
+                        <option value="7" {% if days == 7 %}selected{% endif %}>최근 7일</option>
+                        <option value="30" {% if days == 30 %}selected{% endif %}>최근 30일</option>
+                        <option value="90" {% if days == 90 %}selected{% endif %}>최근 90일</option>
+                        <option value="365" {% if days == 365 %}selected{% endif %}>최근 1년</option>
+                    </select>
+                    <button class="btn btn-outline-secondary" onclick="exportData()">
+                        <i class="fas fa-download me-1"></i>내보내기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-0 bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-1 text-white-50">제품 조회수</h6>
+                            <h3 class="card-title mb-0">{{ "{:,}".format(total_product_views) }}</h3>
+                        </div>
+                        <div class="metric-icon">
+                            <i class="fas fa-eye fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-0 bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-1 text-white-50">콘텐츠 조회수</h6>
+                            <h3 class="card-title mb-0">{{ "{:,}".format(total_content_views) }}</h3>
+                        </div>
+                        <div class="metric-icon">
+                            <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-0 bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-1 text-white-50">총 사용자</h6>
+                            <h3 class="card-title mb-0">{{ "{:,}".format(total_unique_users) }}</h3>
+                        </div>
+                        <div class="metric-icon">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-0 bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-1 text-white-50">평균 세션 시간</h6>
+                            <h3 class="card-title mb-0">{{ avg_session_duration }}분</h3>
+                        </div>
+                        <div class="metric-icon">
+                            <i class="fas fa-clock fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Daily Analytics Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-area text-primary me-2"></i>
+                        일별 조회수 추이
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyAnalyticsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Device Breakdown -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-mobile-alt text-success me-2"></i>
+                        디바이스 분석
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="deviceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Performance Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-trophy text-warning me-2"></i>
+                        인기 제품 성과
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>제품명</th>
+                                    <th>카테고리</th>
+                                    <th>총 조회수</th>
+                                    <th>고유 조회자</th>
+                                    <th>평균 조회 시간</th>
+                                    <th>참여율</th>
+                                    <th>판매자</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in product_metrics %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                           class="text-decoration-none fw-medium">
+                                            {{ product.name[:30] }}{% if product.name|length > 30 %}...{% endif %}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ product.category }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-primary">{{ "{:,}".format(product.total_views) }}</span>
+                                    </td>
+                                    <td>{{ "{:,}".format(product.unique_viewers) }}</td>
+                                    <td>{{ product.avg_duration }}초</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-success" 
+                                                     style="width: {{ product.engagement_rate }}%"></div>
+                                            </div>
+                                            <span class="small">{{ product.engagement_rate }}%</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ product.seller }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Analytics Row -->
+    <div class="row">
+        <!-- Browser Analytics -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fab fa-chrome text-info me-2"></i>
+                        브라우저 분석
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for browser, count in browser_breakdown.items() %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>{{ browser }}</span>
+                        <div class="d-flex align-items-center">
+                            <div class="progress me-2" style="width: 100px; height: 8px;">
+                                <div class="progress-bar bg-info" 
+                                     style="width: {{ (count / total_sessions * 100) if total_sessions > 0 else 0 }}%"></div>
+                            </div>
+                            <span class="text-muted small">{{ count }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Referrers -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-external-link-alt text-purple me-2"></i>
+                        주요 유입 경로
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if referrer_breakdown %}
+                        {% for referrer, count in referrer_breakdown.items() %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-truncate">{{ referrer }}</span>
+                            <div class="d-flex align-items-center">
+                                <div class="progress me-2" style="width: 100px; height: 8px;">
+                                    <div class="progress-bar bg-purple" 
+                                         style="width: {{ (count / (total_product_views + total_content_views) * 100) if (total_product_views + total_content_views) > 0 else 0 }}%"></div>
+                                </div>
+                                <span class="text-muted small">{{ count }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">유입 경로 데이터가 없습니다</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+.metric-icon {
+    opacity: 0.7;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.text-purple {
+    color: #6f42c1 !important;
+}
+</style>
+
+<script>
+// Daily Analytics Chart
+const dailyCtx = document.getElementById('dailyAnalyticsChart').getContext('2d');
+const dailyData = {{ daily_analytics | tojson }};
+
+new Chart(dailyCtx, {
+    type: 'line',
+    data: {
+        labels: dailyData.map(d => {
+            const date = new Date(d.date);
+            return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+        }),
+        datasets: [{
+            label: '제품 조회수',
+            data: dailyData.map(d => d.product_views),
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: '콘텐츠 조회수',
+            data: dailyData.map(d => d.content_views),
+            borderColor: '#198754',
+            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: '고유 사용자',
+            data: dailyData.map(d => d.unique_users),
+            borderColor: '#fd7e14',
+            backgroundColor: 'rgba(253, 126, 20, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.1)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// Device Chart
+const deviceCtx = document.getElementById('deviceChart').getContext('2d');
+const deviceData = {{ device_breakdown | tojson }};
+
+new Chart(deviceCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['데스크탑', '모바일', '태블릿'],
+        datasets: [{
+            data: [deviceData.desktop || 0, deviceData.mobile || 0, deviceData.tablet || 0],
+            backgroundColor: ['#0d6efd', '#198754', '#ffc107'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    font: {
+                        size: 12
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Date range change function
+function updateDateRange() {
+    const days = document.getElementById('dateRange').value;
+    window.location.href = `{{ url_for('user_views_analytics') }}?days=${days}`;
+}
+
+// Export data function
+function exportData() {
+    // Create CSV data
+    const csvData = [
+        ['제품명', '카테고리', '총 조회수', '고유 조회자', '평균 조회 시간', '참여율', '판매자'],
+        ...{{ product_metrics | tojson }}.map(p => [
+            p.name, p.category, p.total_views, p.unique_viewers, 
+            p.avg_duration, p.engagement_rate, p.seller
+        ])
+    ];
+    
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `user_views_analytics_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// Auto-refresh every 5 minutes
+setTimeout(() => {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

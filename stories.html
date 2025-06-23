@@ -1,0 +1,1108 @@
+{% extends "base.html" %}
+
+{% block title %}Limited-Time Stories - Dynamic Content Manager{% endblock %}
+
+{% block content %}
+<div class="container-responsive">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+                <h1 class="mb-0 text-responsive">
+                    <i class="fas fa-clock me-2 text-danger"></i>
+                    Limited-Time Stories
+                    <small class="text-muted ms-2">한정 시간 스토리</small>
+                </h1>
+                {% if current_user.is_authenticated %}
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('create_story') }}" class="btn btn-primary btn-responsive">
+                        <i class="fas fa-plus me-2"></i>
+                        Create Story
+                    </a>
+                    <a href="{{ url_for('my_stories') }}" class="btn btn-outline-secondary btn-responsive">
+                        <i class="fas fa-user me-2"></i>
+                        My Stories
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TikTok-style Story Viewer Button -->
+    {% if stories %}
+    <div class="text-center mb-4">
+        <button class="btn btn-primary btn-lg" onclick="openStoryViewer()">
+            <i class="fas fa-play me-2"></i>
+            Watch Stories 故事播放模式
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- TikTok-style Full Screen Story Viewer -->
+    <div id="storyViewer" class="story-viewer">
+        <div class="story-viewer-container">
+            <!-- Close Button -->
+            <button class="story-close-btn" onclick="closeStoryViewer()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <!-- Story Content Container -->
+            <div class="story-content-wrapper" id="storyContentWrapper">
+                {% for story in stories %}
+                <div class="story-slide" data-story-id="{{ story.id }}" data-index="{{ loop.index0 }}">
+                    <div class="story-background">
+                        {% if story.image_url %}
+                        <img src="{{ story.image_url }}" alt="{{ story.title }}" class="story-bg-image">
+                        {% else %}
+                        <div class="story-bg-gradient" style="background: linear-gradient(135deg, {{ story.background_color or '#007bff' }}, #6f42c1);"></div>
+                        {% endif %}
+                        <div class="story-overlay"></div>
+                    </div>
+                    
+                    <!-- Story Progress Bar -->
+                    <div class="story-progress-container">
+                        {% for s in stories %}
+                        <div class="story-progress-bar" data-index="{{ loop.index0 }}">
+                            <div class="story-progress-fill"></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Story Content -->
+                    <div class="story-content">
+                        <div class="story-header">
+                            <div class="story-author">
+                                <div class="story-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="story-author-info">
+                                    <h6 class="mb-0">{{ story.author_name }}</h6>
+                                    <small class="story-time">{{ story.time_remaining_korean }}</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-{{ 'primary' if story.story_type == 'general' else 'success' if story.story_type == 'product' else 'warning' if story.story_type == 'event' else 'info' }} story-type-badge">
+                                {% if story.story_type == 'general' %}
+                                    <i class="fas fa-star me-1"></i>General
+                                {% elif story.story_type == 'product' %}
+                                    <i class="fas fa-shopping-bag me-1"></i>Product
+                                {% elif story.story_type == 'event' %}
+                                    <i class="fas fa-calendar me-1"></i>Event
+                                {% elif story.story_type == 'news' %}
+                                    <i class="fas fa-newspaper me-1"></i>News
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="story-body">
+                            <h2 class="story-title">{{ story.title }}</h2>
+                            {% if story.content %}
+                            <p class="story-description">{{ story.content }}</p>
+                            {% endif %}
+                            
+                            {% if story.linked_product %}
+                            <div class="story-product-link">
+                                <a href="{{ url_for('product_detail', product_id=story.linked_product.id) }}" class="btn btn-light btn-sm">
+                                    <i class="fas fa-shopping-cart me-1"></i>
+                                    View Product
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Story Actions -->
+                        <div class="story-actions">
+                            <button class="story-action-btn" onclick="likeStory({{ story.id }})">
+                                <i class="fas fa-heart"></i>
+                                <span class="story-action-count">{{ story.likes or 0 }}</span>
+                            </button>
+                            <button class="story-action-btn" onclick="shareStory({{ story.id }})">
+                                <i class="fas fa-share"></i>
+                            </button>
+                            {% if story.linked_product %}
+                            <button class="story-action-btn" onclick="addToCart({{ story.linked_product.id }})">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Areas -->
+                    <div class="story-nav-area story-nav-prev" onclick="previousStory()"></div>
+                    <div class="story-nav-area story-nav-next" onclick="nextStory()"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stories Grid (Traditional View) -->
+    {% if stories %}
+    <div class="row g-4">
+        {% for story in stories %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card story-card h-100 slide-in-up" style="animation-delay: {{ loop.index0 * 0.1 }}s;" onclick="openStoryViewer({{ loop.index0 }})">
+                {% if story.image_url %}
+                <div class="story-image" style="background-image: url('{{ story.image_url }}'); height: 200px; background-size: cover; background-position: center; position: relative; border-radius: 0.5rem 0.5rem 0 0; cursor: pointer;">
+                {% else %}
+                <div class="story-image" style="height: 200px; background: linear-gradient(135deg, {{ story.background_color or '#007bff' }}, #6f42c1); position: relative; border-radius: 0.5rem 0.5rem 0 0; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <i class="fas fa-image fa-3x text-white opacity-50"></i>
+                {% endif %}
+                    <!-- Story Type Badge -->
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-{{ 'primary' if story.story_type == 'general' else 'success' if story.story_type == 'product' else 'warning' if story.story_type == 'event' else 'info' }} story-type-badge">
+                            {% if story.story_type == 'general' %}
+                                <i class="fas fa-star me-1"></i>General
+                            {% elif story.story_type == 'product' %}
+                                <i class="fas fa-shopping-bag me-1"></i>Product
+                            {% elif story.story_type == 'event' %}
+                                <i class="fas fa-calendar me-1"></i>Event
+                            {% elif story.story_type == 'news' %}
+                                <i class="fas fa-newspaper me-1"></i>News
+                            {% else %}
+                                <i class="fas fa-bullhorn me-1"></i>Promotion
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <!-- Time Remaining Badge -->
+                    <div class="position-absolute top-0 end-0 m-2">
+                        {% if story.is_expired() %}
+                        <span class="badge bg-danger time-badge">
+                            <i class="fas fa-times me-1"></i>Expired
+                        </span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark time-badge pulse-animation">
+                            <i class="fas fa-clock me-1"></i>{{ story.time_remaining_korean() }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ story.get_localized_title(session.get('language', 'en')) }}</h5>
+                    {% if story.content %}
+                    <p class="card-text text-muted flex-grow-1">{{ story.get_localized_content(session.get('language', 'en'))[:100] }}{% if story.content|length > 100 %}...{% endif %}</p>
+                    {% endif %}
+                    
+                    <!-- Story Stats -->
+                    <div class="d-flex justify-content-between align-items-center mb-3 text-muted small">
+                        <div>
+                            <i class="fas fa-eye me-1"></i>{{ story.view_count }}
+                            <i class="fas fa-mouse-pointer me-1 ms-2"></i>{{ story.click_count }}
+                            <i class="fas fa-heart me-1 ms-2"></i>{{ story.like_count }}
+                        </div>
+                        <div>
+                            <i class="fas fa-user me-1"></i>{{ story.author_name }}
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2">
+                        {% if not story.is_expired() %}
+                        <a href="{{ url_for('story_detail', story_id=story.id) }}" class="btn btn-primary btn-sm flex-grow-1">
+                            <i class="fas fa-eye me-1"></i>View Story
+                        </a>
+                        {% if story.linked_product_id %}
+                        <a href="{{ url_for('story_click', story_id=story.id) }}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-shopping-cart me-1"></i>Product
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <button class="btn btn-secondary btn-sm flex-grow-1" disabled>
+                            <i class="fas fa-times me-1"></i>Expired
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-clock fa-4x text-muted opacity-50"></i>
+                </div>
+                <h3 class="text-muted">No Active Stories</h3>
+                <p class="text-muted mb-4">There are currently no limited-time stories available.</p>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('create_story') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Create Your First Story
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* TikTok-style Story Viewer */
+.story-viewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 9999;
+    display: none;
+    overflow: hidden;
+}
+
+.story-viewer-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.story-content-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.story-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.story-slide.active {
+    transform: translateY(0);
+}
+
+.story-slide.prev {
+    transform: translateY(-100%);
+}
+
+.story-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.story-bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.story-bg-gradient {
+    width: 100%;
+    height: 100%;
+}
+
+.story-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, 
+        rgba(0,0,0,0.3) 0%, 
+        rgba(0,0,0,0.1) 30%, 
+        rgba(0,0,0,0.1) 70%, 
+        rgba(0,0,0,0.6) 100%);
+}
+
+.story-content {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    color: white;
+}
+
+.story-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 20;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.story-close-btn:hover {
+    background: rgba(0,0,0,0.8);
+    transform: scale(1.1);
+}
+
+/* Progress Bars */
+.story-progress-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 60px;
+    z-index: 15;
+    display: flex;
+    gap: 4px;
+}
+
+.story-progress-bar {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.story-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: white;
+    border-radius: 2px;
+    transition: width 0.1s linear;
+}
+
+.story-progress-bar.completed .story-progress-fill {
+    width: 100%;
+}
+
+.story-progress-bar.active .story-progress-fill {
+    animation: progressFill 5s linear forwards;
+}
+
+@keyframes progressFill {
+    from { width: 0%; }
+    to { width: 100%; }
+}
+
+/* Story Header */
+.story-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 40px;
+}
+
+.story-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.story-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.story-author-info h6 {
+    color: white;
+    font-weight: 600;
+}
+
+.story-time {
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+}
+
+.story-type-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Story Body */
+.story-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 0;
+}
+
+.story-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.story-description {
+    font-size: 16px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 20px;
+}
+
+.story-product-link {
+    margin-top: 20px;
+}
+
+.story-product-link .btn {
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Story Actions */
+.story-actions {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 15;
+}
+
+.story-action-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.story-action-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}
+
+.story-action-count {
+    font-size: 12px;
+    margin-top: 2px;
+    font-weight: 600;
+}
+
+/* Navigation Areas */
+.story-nav-area {
+    position: absolute;
+    top: 0;
+    width: 30%;
+    height: 100%;
+    z-index: 12;
+    cursor: pointer;
+}
+
+.story-nav-prev {
+    left: 0;
+}
+
+.story-nav-next {
+    right: 0;
+}
+
+/* Traditional Story Cards */
+.story-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.story-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .story-content {
+        padding: 15px;
+    }
+    
+    .story-title {
+        font-size: 24px;
+    }
+    
+    .story-description {
+        font-size: 14px;
+    }
+    
+    .story-actions {
+        right: 15px;
+        gap: 15px;
+    }
+    
+    .story-action-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+    
+    .story-progress-container {
+        left: 15px;
+        right: 50px;
+    }
+    
+    .story-close-btn {
+        top: 15px;
+        right: 15px;
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+}
+
+.story-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.story-type-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+}
+
+.time-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-weight: 600;
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.slide-in-up {
+    animation: slideInUp 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+@keyframes slideInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+<script>
+// TikTok-style Story Viewer JavaScript
+let currentStoryIndex = 0;
+let stories = [];
+let progressTimer;
+let touchStartY = 0;
+let touchStartX = 0;
+let isStoryViewerOpen = false;
+
+// Initialize story viewer
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all story data
+    stories = Array.from(document.querySelectorAll('.story-slide')).map((slide, index) => ({
+        id: slide.dataset.storyId,
+        index: index,
+        element: slide
+    }));
+});
+
+// Open story viewer
+function openStoryViewer(startIndex = 0) {
+    currentStoryIndex = startIndex;
+    isStoryViewerOpen = true;
+    
+    const viewer = document.getElementById('storyViewer');
+    viewer.style.display = 'block';
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Show first story
+    showStory(currentStoryIndex);
+    
+    // Add keyboard events
+    document.addEventListener('keydown', handleKeyboard);
+    
+    // Add touch events
+    const wrapper = document.getElementById('storyContentWrapper');
+    wrapper.addEventListener('touchstart', handleTouchStart, { passive: false });
+    wrapper.addEventListener('touchmove', handleTouchMove, { passive: false });
+    wrapper.addEventListener('touchend', handleTouchEnd, { passive: false });
+    
+    // Add mouse events for desktop
+    wrapper.addEventListener('wheel', handleWheel, { passive: false });
+}
+
+// Close story viewer
+function closeStoryViewer() {
+    isStoryViewerOpen = false;
+    
+    const viewer = document.getElementById('storyViewer');
+    viewer.style.display = 'none';
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+    
+    // Clear progress timer
+    if (progressTimer) {
+        clearTimeout(progressTimer);
+    }
+    
+    // Remove event listeners
+    document.removeEventListener('keydown', handleKeyboard);
+    
+    const wrapper = document.getElementById('storyContentWrapper');
+    wrapper.removeEventListener('touchstart', handleTouchStart);
+    wrapper.removeEventListener('touchmove', handleTouchMove);
+    wrapper.removeEventListener('touchend', handleTouchEnd);
+    wrapper.removeEventListener('wheel', handleWheel);
+}
+
+// Show specific story
+function showStory(index) {
+    if (index < 0 || index >= stories.length) return;
+    
+    currentStoryIndex = index;
+    
+    // Update all story slides
+    stories.forEach((story, i) => {
+        const slide = story.element;
+        slide.classList.remove('active', 'prev');
+        
+        if (i === index) {
+            slide.classList.add('active');
+            // Track story view for recommendation algorithm
+            trackStoryView(story.id);
+        } else if (i < index) {
+            slide.classList.add('prev');
+        }
+    });
+    
+    // Update progress bars
+    updateProgressBars();
+    
+    // Start progress timer for auto-advance
+    startProgressTimer();
+    
+    // Preload next recommended stories when approaching end
+    if (index >= stories.length - 3) {
+        loadNextRecommendedStories();
+    }
+}
+
+// Update progress bars
+function updateProgressBars() {
+    const progressBars = document.querySelectorAll('.story-progress-bar');
+    
+    progressBars.forEach((bar, index) => {
+        bar.classList.remove('completed', 'active');
+        
+        if (index < currentStoryIndex) {
+            bar.classList.add('completed');
+        } else if (index === currentStoryIndex) {
+            bar.classList.add('active');
+        }
+    });
+}
+
+// Start progress timer
+function startProgressTimer() {
+    if (progressTimer) {
+        clearTimeout(progressTimer);
+    }
+    
+    // Auto-advance to next story after 5 seconds
+    progressTimer = setTimeout(() => {
+        nextStory();
+    }, 5000);
+}
+
+// Navigate to next story
+function nextStory() {
+    if (currentStoryIndex < stories.length - 1) {
+        showStory(currentStoryIndex + 1);
+    } else {
+        // Loop back to first story or close viewer
+        closeStoryViewer();
+    }
+}
+
+// Navigate to previous story
+function previousStory() {
+    if (currentStoryIndex > 0) {
+        showStory(currentStoryIndex - 1);
+    }
+}
+
+// Handle keyboard navigation
+function handleKeyboard(e) {
+    if (!isStoryViewerOpen) return;
+    
+    switch(e.key) {
+        case 'ArrowUp':
+        case 'ArrowLeft':
+            e.preventDefault();
+            previousStory();
+            break;
+        case 'ArrowDown':
+        case 'ArrowRight':
+        case ' ':
+            e.preventDefault();
+            nextStory();
+            break;
+        case 'Escape':
+            e.preventDefault();
+            closeStoryViewer();
+            break;
+    }
+}
+
+// Handle touch start
+function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchStartY = touch.clientY;
+    touchStartX = touch.clientX;
+}
+
+// Handle touch move
+function handleTouchMove(e) {
+    if (!touchStartY || !touchStartX) return;
+    
+    e.preventDefault(); // Prevent scrolling
+}
+
+// Handle touch end
+function handleTouchEnd(e) {
+    if (!touchStartY || !touchStartX) return;
+    
+    const touch = e.changedTouches[0];
+    const diffY = touchStartY - touch.clientY;
+    const diffX = touchStartX - touch.clientX;
+    
+    // Determine if it's a vertical or horizontal swipe
+    if (Math.abs(diffY) > Math.abs(diffX)) {
+        // Vertical swipe
+        if (Math.abs(diffY) > 50) { // Minimum swipe distance
+            if (diffY > 0) {
+                // Swipe up - next story
+                nextStory();
+            } else {
+                // Swipe down - previous story
+                previousStory();
+            }
+        }
+    } else {
+        // Horizontal swipe
+        if (Math.abs(diffX) > 50) {
+            if (diffX > 0) {
+                // Swipe left - next story
+                nextStory();
+            } else {
+                // Swipe right - previous story
+                previousStory();
+            }
+        }
+    }
+    
+    // Reset touch coordinates
+    touchStartY = 0;
+    touchStartX = 0;
+}
+
+// Handle mouse wheel
+function handleWheel(e) {
+    e.preventDefault();
+    
+    if (e.deltaY > 0) {
+        // Scroll down - next story
+        nextStory();
+    } else {
+        // Scroll up - previous story
+        previousStory();
+    }
+}
+
+// Story interaction functions
+function likeStory(storyId) {
+    fetch(`/api/story/${storyId}/like`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update like count in UI
+            const likeBtn = document.querySelector(`[onclick="likeStory(${storyId})"] .story-action-count`);
+            if (likeBtn) {
+                likeBtn.textContent = data.likes;
+            }
+            
+            // Add heart animation
+            const heartIcon = document.querySelector(`[onclick="likeStory(${storyId})"] i`);
+            if (heartIcon) {
+                heartIcon.style.color = '#ff4757';
+                heartIcon.style.animation = 'heartBeat 0.6s ease';
+                setTimeout(() => {
+                    heartIcon.style.animation = '';
+                }, 600);
+            }
+        }
+    })
+    .catch(error => console.error('Error liking story:', error));
+}
+
+function shareStory(storyId) {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Check out this story!',
+            url: window.location.origin + `/story/${storyId}`
+        });
+    } else {
+        // Fallback - copy to clipboard
+        const url = window.location.origin + `/story/${storyId}`;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Story link copied to clipboard! 故事链接已复制到剪贴板！');
+        });
+    }
+}
+
+function addToCart(productId) {
+    fetch('/api/add_to_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showToast('Product added to cart! 产品已添加到购物车！');
+            
+            // Update cart count if visible
+            updateCartCount();
+        } else {
+            showToast('Failed to add to cart. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error adding to cart:', error);
+        showToast('Error adding to cart. Please try again.');
+    });
+}
+
+function showToast(message) {
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = 'story-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 500;
+        animation: toastSlideUp 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'toastSlideDown 0.3s ease forwards';
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 2000);
+}
+
+// Add CSS animations for interactions (check if already exists)
+if (!document.querySelector('style[data-story-animations]')) {
+    const storyAnimationStyle = document.createElement('style');
+    storyAnimationStyle.setAttribute('data-story-animations', 'true');
+    storyAnimationStyle.textContent = `
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes toastSlideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        @keyframes toastSlideDown {
+            from {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+        }
+    `;
+    document.head.appendChild(storyAnimationStyle);
+}
+
+// Track story view for recommendation algorithm
+function trackStoryView(storyId) {
+    fetch(`/api/story/${storyId}/view`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log(`Story ${storyId} view tracked for recommendations`);
+        }
+    })
+    .catch(error => console.error('Error tracking view:', error));
+}
+
+// Load next recommended stories
+function loadNextRecommendedStories() {
+    if (stories.length === 0) return;
+    
+    const currentStoryId = stories[currentStoryIndex].id;
+    
+    fetch(`/api/stories/next/${currentStoryId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.stories.length > 0) {
+            // Add new recommended stories to the end
+            data.stories.forEach(storyData => {
+                if (!stories.find(s => s.id === storyData.id)) {
+                    addStoryToViewer(storyData);
+                }
+            });
+            console.log(`Loaded ${data.stories.length} recommended stories`);
+        }
+    })
+    .catch(error => console.error('Error loading recommendations:', error));
+}
+
+// Add new story to viewer dynamically
+function addStoryToViewer(storyData) {
+    const storySlide = document.createElement('div');
+    storySlide.className = 'story-slide';
+    storySlide.style.backgroundColor = storyData.background_color;
+    
+    storySlide.innerHTML = `
+        <div class="story-content">
+            ${storyData.image_url ? `<img src="${storyData.image_url}" alt="Story Image" class="story-image">` : ''}
+            <div class="story-text-content">
+                <h3 class="story-title">${storyData.title}</h3>
+                <p class="story-description">${storyData.content}</p>
+                <div class="story-meta">
+                    <span class="story-author">by ${storyData.author_name}</span>
+                    <span class="story-type ${storyData.story_type}">${storyData.story_type}</span>
+                    ${storyData.time_remaining ? `<span class="story-countdown">${storyData.time_remaining}</span>` : ''}
+                </div>
+            </div>
+        </div>
+        
+        <div class="story-actions">
+            <button class="action-btn like-btn" onclick="likeStory(${storyData.id})">
+                <i class="fas fa-heart"></i> ${storyData.like_count || 0}
+            </button>
+            <button class="action-btn share-btn" onclick="shareStory(${storyData.id})">
+                <i class="fas fa-share"></i>
+            </button>
+            ${storyData.linked_product_id ? `<button class="action-btn cart-btn" onclick="addToCart(${storyData.linked_product_id})">
+                <i class="fas fa-shopping-cart"></i>
+            </button>` : ''}
+        </div>
+        
+        <div class="story-progress">
+            <div class="story-progress-bar"></div>
+        </div>
+    `;
+    
+    // Add to container
+    const container = document.querySelector('.stories-viewer-container');
+    container.appendChild(storySlide);
+    
+    // Add to stories array
+    stories.push({
+        id: storyData.id,
+        element: storySlide,
+        duration: 8000
+    });
+}
+
+// Auto-play stories when page loads if there's a hash
+window.addEventListener('load', function() {
+    const hash = window.location.hash;
+    if (hash === '#stories' && stories.length > 0) {
+        openStoryViewer(0);
+    }
+});
+</script>
+{% endblock %}

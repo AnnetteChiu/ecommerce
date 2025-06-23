@@ -1,0 +1,542 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit Product{% else %}Create Product{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        {% if is_edit %}
+                        <i class="fas fa-edit me-2 text-primary"></i>
+                        Edit Product
+                        {% else %}
+                        <i class="fas fa-plus-circle me-2 text-primary"></i>
+                        Create New Product
+                        {% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.name.label(class="form-label") }}
+                                    {{ form.name(class="form-control") }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.price.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.price(class="form-control") }}
+                                    </div>
+                                    {% if form.price.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.price.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="4") }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.category.label(class="form-label") }}
+                                    {{ form.category(class="form-select") }}
+                                    {% if form.category.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.category.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.stock_quantity.label(class="form-label") }}
+                                    {{ form.stock_quantity(class="form-control") }}
+                                    {% if form.stock_quantity.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.stock_quantity.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.is_digital(class="form-check-input") }}
+                                {{ form.is_digital.label(class="form-check-label") }}
+                            </div>
+                            <small class="text-muted">Digital products don't require stock management</small>
+                        </div>
+
+                        <!-- Seasonal Product Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-snowflake me-2"></i>
+                                    Seasonal Availability
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_seasonal(class="form-check-input", id="is_seasonal") }}
+                                        {{ form.is_seasonal.label(class="form-check-label") }}
+                                    </div>
+                                    <small class="text-muted">{{ form.is_seasonal.description }}</small>
+                                </div>
+
+                                <div id="seasonal-fields" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                {{ form.season_type.label(class="form-label") }}
+                                                {{ form.season_type(class="form-select") }}
+                                                <small class="text-muted">{{ form.season_type.description }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                {{ form.seasonal_year.label(class="form-label") }}
+                                                {{ form.seasonal_year(class="form-control", placeholder="e.g., 2024") }}
+                                                <small class="text-muted">{{ form.seasonal_year.description }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                {{ form.seasonal_start.label(class="form-label") }}
+                                                {{ form.seasonal_start(class="form-control", type="datetime-local") }}
+                                                <small class="text-muted">{{ form.seasonal_start.description }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                {{ form.seasonal_end.label(class="form-label") }}
+                                                {{ form.seasonal_end(class="form-control", type="datetime-local") }}
+                                                <small class="text-muted">{{ form.seasonal_end.description }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            <strong>How it works:</strong> You can either select a season type (which uses predefined months) 
+                                            or set specific start/end dates. If both are provided, the dates take priority.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Auto Upload Image System -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-images me-2"></i>Product Images
+                            </label>
+                            
+                            <!-- Drag and Drop Upload Zone -->
+                            <div id="image-upload-zone" class="border border-2 border-dashed rounded p-4 text-center mb-3" 
+                                 style="border-color: #dee2e6; background-color: #f8f9fa; cursor: pointer; transition: all 0.3s ease;">
+                                <div id="upload-content">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Auto Upload Product Images</h5>
+                                    <p class="text-muted mb-2">
+                                        Drag and drop images here or click to select
+                                    </p>
+                                    <p class="small text-muted">
+                                        Supports: JPG, PNG, WEBP, GIF (Max 10MB each)
+                                    </p>
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('multiple-images').click()">
+                                        <i class="fas fa-plus me-2"></i>Select Images
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Hidden file input for multiple images -->
+                            <input type="file" id="multiple-images" name="images" multiple accept="image/*" style="display: none;">
+                            
+                            <!-- Keep original single image field for form compatibility -->
+                            <input type="file" name="image" id="single-image" style="display: none;">
+                            
+                            <!-- Image Preview Grid -->
+                            <div id="image-preview-grid" class="row g-3" style="display: none;">
+                                <div class="col-12">
+                                    <h6 class="mb-3">
+                                        <i class="fas fa-eye me-2"></i>Image Preview
+                                        <small class="text-muted ms-2">(<span id="image-count">0</span> images selected)</small>
+                                    </h6>
+                                </div>
+                            </div>
+                            
+                            <!-- Upload Progress -->
+                            <div id="upload-progress" style="display: none;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <strong class="me-2">Uploading:</strong>
+                                    <span id="upload-status">Processing images...</span>
+                                </div>
+                                <div class="progress">
+                                    <div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            {% if form.image.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.image.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            {% if is_edit %}
+                            <a href="{{ url_for('my_products') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to My Products
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('shop') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Shop
+                            </a>
+                            {% endif %}
+                            {% if is_edit %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Product
+                            </button>
+                            {% else %}
+                            {{ form.submit(class="btn btn-primary") }}
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isDigitalCheckbox = document.getElementById('is_digital');
+    const isSeasonalCheckbox = document.getElementById('is_seasonal');
+    const seasonalFields = document.getElementById('seasonal-fields');
+    const stockQuantityGroup = document.querySelector('[for="stock_quantity"]').closest('.mb-3');
+    
+    // Show/hide stock quantity based on digital product checkbox
+    function toggleStockQuantity() {
+        if (isDigitalCheckbox.checked) {
+            stockQuantityGroup.style.display = 'none';
+            document.getElementById('stock_quantity').value = '0';
+        } else {
+            stockQuantityGroup.style.display = 'block';
+        }
+    }
+    
+    // Show/hide seasonal fields based on seasonal product checkbox
+    function toggleSeasonalFields() {
+        const seasonalInputs = ['season_type', 'seasonal_start', 'seasonal_end', 'seasonal_year'];
+        
+        if (isSeasonalCheckbox.checked) {
+            seasonalFields.style.display = 'block';
+            // Enable seasonal fields when showing
+            seasonalInputs.forEach(function(inputId) {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.disabled = false;
+                }
+            });
+        } else {
+            seasonalFields.style.display = 'none';
+            // Clear and disable seasonal fields when hiding
+            seasonalInputs.forEach(function(inputId) {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.value = '';
+                    input.disabled = true;
+                }
+            });
+        }
+    }
+    
+    // Handle form submission to properly handle disabled fields
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!isSeasonalCheckbox.checked) {
+            // Re-enable seasonal fields temporarily and clear them to ensure proper submission
+            const seasonalInputs = ['seasonal_start', 'seasonal_end', 'seasonal_year'];
+            seasonalInputs.forEach(function(inputId) {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.disabled = false;
+                    input.value = '';
+                }
+            });
+        }
+    });
+    
+    isDigitalCheckbox.addEventListener('change', toggleStockQuantity);
+    isSeasonalCheckbox.addEventListener('change', function() {
+        console.log('Seasonal checkbox changed:', isSeasonalCheckbox.checked);
+        toggleSeasonalFields();
+    });
+    
+    // Run on page load
+    toggleStockQuantity();
+    toggleSeasonalFields();
+    
+    // For edit mode, check if seasonal fields should be enabled based on existing data
+    {% if is_edit and product and product.is_seasonal %}
+    if (isSeasonalCheckbox && !isSeasonalCheckbox.checked) {
+        isSeasonalCheckbox.checked = true;
+        toggleSeasonalFields();
+    }
+    {% endif %}
+    
+    // Initialize Auto Image Upload System
+    initAutoImageUpload();
+});
+
+function initAutoImageUpload() {
+    const uploadZone = document.getElementById('image-upload-zone');
+    const multipleImages = document.getElementById('multiple-images');
+    const singleImage = document.getElementById('single-image');
+    const previewGrid = document.getElementById('image-preview-grid');
+    const imageCount = document.getElementById('image-count');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('upload-progress-bar');
+    const uploadStatus = document.getElementById('upload-status');
+    
+    let selectedFiles = [];
+    
+    // Drag and Drop Events
+    uploadZone.addEventListener('dragover', handleDragOver);
+    uploadZone.addEventListener('dragenter', handleDragEnter);
+    uploadZone.addEventListener('dragleave', handleDragLeave);
+    uploadZone.addEventListener('drop', handleDrop);
+    uploadZone.addEventListener('click', () => multipleImages.click());
+    
+    // File Selection Event
+    multipleImages.addEventListener('change', handleFileSelect);
+    
+    function handleDragOver(e) {
+        e.preventDefault();
+        uploadZone.style.borderColor = '#007bff';
+        uploadZone.style.backgroundColor = '#e3f2fd';
+    }
+    
+    function handleDragEnter(e) {
+        e.preventDefault();
+        uploadZone.classList.add('drag-active');
+    }
+    
+    function handleDragLeave(e) {
+        e.preventDefault();
+        if (!uploadZone.contains(e.relatedTarget)) {
+            uploadZone.style.borderColor = '#dee2e6';
+            uploadZone.style.backgroundColor = '#f8f9fa';
+            uploadZone.classList.remove('drag-active');
+        }
+    }
+    
+    function handleDrop(e) {
+        e.preventDefault();
+        uploadZone.style.borderColor = '#dee2e6';
+        uploadZone.style.backgroundColor = '#f8f9fa';
+        uploadZone.classList.remove('drag-active');
+        
+        const files = Array.from(e.dataTransfer.files);
+        processFiles(files);
+    }
+    
+    function handleFileSelect(e) {
+        const files = Array.from(e.target.files);
+        processFiles(files);
+    }
+    
+    function processFiles(files) {
+        // Filter image files only
+        const imageFiles = files.filter(file => {
+            return file.type.startsWith('image/') && file.size <= 10 * 1024 * 1024; // 10MB limit
+        });
+        
+        if (imageFiles.length === 0) {
+            showNotification('Please select valid image files (max 10MB each)', 'warning');
+            return;
+        }
+        
+        selectedFiles = imageFiles;
+        
+        // Set the first image as the main product image for form compatibility
+        if (imageFiles.length > 0) {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(imageFiles[0]);
+            singleImage.files = dataTransfer.files;
+        }
+        
+        displayImagePreviews();
+        updateImageCount();
+        autoUploadImages();
+    }
+    
+    function displayImagePreviews() {
+        previewGrid.innerHTML = `
+            <div class="col-12">
+                <h6 class="mb-3">
+                    <i class="fas fa-eye me-2"></i>Image Preview
+                    <small class="text-muted ms-2">(<span id="image-count">${selectedFiles.length}</span> images selected)</small>
+                </h6>
+            </div>
+        `;
+        
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewCol = document.createElement('div');
+                previewCol.className = 'col-md-3 col-sm-4 col-6';
+                previewCol.innerHTML = `
+                    <div class="card h-100">
+                        <div class="position-relative">
+                            <img src="${e.target.result}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
+                                    onclick="removeImage(${index})" title="Remove image">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            ${index === 0 ? '<span class="badge bg-primary position-absolute bottom-0 start-0 m-1">Main</span>' : ''}
+                        </div>
+                        <div class="card-body p-2">
+                            <small class="text-muted">${file.name}</small>
+                            <br>
+                            <small class="text-muted">${formatFileSize(file.size)}</small>
+                        </div>
+                    </div>
+                `;
+                previewGrid.appendChild(previewCol);
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        previewGrid.style.display = 'block';
+    }
+    
+    function updateImageCount() {
+        const countElement = document.getElementById('image-count');
+        if (countElement) {
+            countElement.textContent = selectedFiles.length;
+        }
+    }
+    
+    function autoUploadImages() {
+        if (selectedFiles.length === 0) return;
+        
+        uploadProgress.style.display = 'block';
+        progressBar.style.width = '0%';
+        uploadStatus.textContent = 'Preparing images for upload...';
+        
+        // Simulate upload progress with realistic timing
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15 + 5; // 5-20% increments
+            if (progress >= 90) {
+                progress = 90;
+            }
+            
+            progressBar.style.width = progress + '%';
+            
+            if (progress >= 90) {
+                uploadStatus.textContent = 'Images ready for submission';
+                clearInterval(progressInterval);
+                
+                setTimeout(() => {
+                    progressBar.style.width = '100%';
+                    uploadStatus.textContent = `${selectedFiles.length} image${selectedFiles.length > 1 ? 's' : ''} ready to upload`;
+                    progressBar.classList.remove('progress-bar-animated');
+                    progressBar.classList.add('bg-success');
+                }, 500);
+            }
+        }, 200);
+    }
+    
+    // Global function to remove images
+    window.removeImage = function(index) {
+        selectedFiles.splice(index, 1);
+        
+        if (selectedFiles.length > 0) {
+            // Update the main image field
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(selectedFiles[0]);
+            singleImage.files = dataTransfer.files;
+            
+            displayImagePreviews();
+            updateImageCount();
+        } else {
+            // Hide preview if no images
+            previewGrid.style.display = 'none';
+            uploadProgress.style.display = 'none';
+            singleImage.value = '';
+        }
+    };
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function showNotification(message, type = 'info') {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+}
+</script>
+{% endblock %}

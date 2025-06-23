@@ -1,0 +1,584 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_translation('sales_reports', current_language) }} - {{ get_translation('analytics', current_language) }}{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-primary">
+                        <i class="fas fa-chart-line me-2"></i>
+                        {{ get_translation('sales_reports', current_language) }}
+                    </h1>
+                    <p class="text-muted">{{ get_translation('comprehensive_sales_analysis', current_language) }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="exportReport('csv')">
+                        <i class="fas fa-download me-1"></i>
+                        CSV
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="exportReport('pdf')">
+                        <i class="fas fa-file-pdf me-1"></i>
+                        PDF
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshReports()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        {{ get_translation('refresh', current_language) }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">{{ get_translation('from_date', current_language) }}</label>
+                            <input type="date" class="form-control" id="startDate" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ get_translation('to_date', current_language) }}</label>
+                            <input type="date" class="form-control" id="endDate" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ get_translation('period', current_language) }}</label>
+                            <select class="form-select" id="periodSelect">
+                                <option value="today">{{ get_translation('today', current_language) }}</option>
+                                <option value="yesterday">{{ get_translation('yesterday', current_language) }}</option>
+                                <option value="week" selected>{{ get_translation('this_week', current_language) }}</option>
+                                <option value="month">{{ get_translation('this_month', current_language) }}</option>
+                                <option value="quarter">{{ get_translation('this_quarter', current_language) }}</option>
+                                <option value="year">{{ get_translation('this_year', current_language) }}</option>
+                                <option value="custom">{{ get_translation('custom_range', current_language) }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-success w-100" onclick="updateReports()">
+                                <i class="fas fa-filter me-1"></i>
+                                {{ get_translation('apply_filter', current_language) }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Summary -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon mb-3">
+                        <i class="fas fa-dollar-sign fa-2x text-success"></i>
+                    </div>
+                    <h3 class="metric-value text-success" id="totalRevenue">₩{{ "{:,}".format(total_revenue) }}</h3>
+                    <p class="metric-label text-muted mb-2">{{ get_translation('total_revenue', current_language) }}</p>
+                    <small class="text-success">
+                        <i class="fas fa-arrow-up me-1"></i>
+                        <span id="revenueGrowth">+{{ revenue_growth }}%</span> vs {{ get_translation('previous_period', current_language) }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon mb-3">
+                        <i class="fas fa-shopping-cart fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="metric-value text-primary" id="totalOrders">{{ total_orders }}</h3>
+                    <p class="metric-label text-muted mb-2">{{ get_translation('total_orders', current_language) }}</p>
+                    <small class="text-primary">
+                        <i class="fas fa-arrow-up me-1"></i>
+                        <span id="ordersGrowth">+{{ orders_growth }}%</span> vs {{ get_translation('previous_period', current_language) }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon mb-3">
+                        <i class="fas fa-chart-line fa-2x text-info"></i>
+                    </div>
+                    <h3 class="metric-value text-info" id="avgOrderValue">₩{{ "{:,}".format(avg_order_value) }}</h3>
+                    <p class="metric-label text-muted mb-2">{{ get_translation('avg_order_value', current_language) }}</p>
+                    <small class="text-info">
+                        <i class="fas fa-arrow-up me-1"></i>
+                        <span id="aovGrowth">+{{ aov_growth }}%</span> vs {{ get_translation('previous_period', current_language) }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon mb-3">
+                        <i class="fas fa-users fa-2x text-warning"></i>
+                    </div>
+                    <h3 class="metric-value text-warning" id="uniqueCustomers">{{ unique_customers }}</h3>
+                    <p class="metric-label text-muted mb-2">{{ get_translation('unique_customers', current_language) }}</p>
+                    <small class="text-warning">
+                        <i class="fas fa-arrow-up me-1"></i>
+                        <span id="customersGrowth">+{{ customers_growth }}%</span> vs {{ get_translation('previous_period', current_language) }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-area me-2"></i>
+                        {{ get_translation('revenue_trend', current_language) }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        {{ get_translation('top_categories', current_language) }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Performance Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-trophy me-2"></i>
+                        {{ get_translation('top_products', current_language) }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{{ get_translation('rank', current_language) }}</th>
+                                    <th>{{ get_translation('product', current_language) }}</th>
+                                    <th>{{ get_translation('category', current_language) }}</th>
+                                    <th>{{ get_translation('quantity_sold', current_language) }}</th>
+                                    <th>{{ get_translation('revenue', current_language) }}</th>
+                                    <th>{{ get_translation('avg_rating', current_language) }}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topProductsTable">
+                                {% for product in top_products %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary rounded-pill">{{ loop.index }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if product.image_url %}
+                                            <img src="{{ url_for('uploaded_file', filename=product.image_url.split('/')[-1]) }}" 
+                                                 alt="{{ product.name }}" 
+                                                 class="product-thumb me-3"
+                                                 style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ product.name }}</strong>
+                                                <br>
+                                                <small class="text-muted">₩{{ "{:,}".format(product.price) }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ product.category }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ product.quantity_sold }}</span>
+                                    </td>
+                                    <td class="text-success fw-bold">₩{{ "{:,}".format(product.total_revenue) }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-1">{{ "%.1f"|format(product.avg_rating) }}</span>
+                                            <div class="stars">
+                                                {% for i in range(5) %}
+                                                    {% if i < product.avg_rating %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-muted"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales by Period Table -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        {{ get_translation('daily_sales', current_language) }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{{ get_translation('date', current_language) }}</th>
+                                    <th>{{ get_translation('orders', current_language) }}</th>
+                                    <th>{{ get_translation('revenue', current_language) }}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dailySalesTable">
+                                {% for day in daily_sales %}
+                                <tr>
+                                    <td>{{ day.date.strftime('%m/%d') }}</td>
+                                    <td>{{ day.orders }}</td>
+                                    <td class="text-success">₩{{ "{:,}".format(day.revenue) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        {{ get_translation('customer_insights', current_language) }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h4 class="text-primary">{{ new_customers }}</h4>
+                            <small class="text-muted">{{ get_translation('new_customers', current_language) }}</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success">{{ returning_customers }}</h4>
+                            <small class="text-muted">{{ get_translation('returning_customers', current_language) }}</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">{{ customer_retention_rate }}%</h4>
+                            <small class="text-muted">{{ get_translation('retention_rate', current_language) }}</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">{{ avg_orders_per_customer }}</h4>
+                            <small class="text-muted">{{ get_translation('avg_orders_per_customer', current_language) }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.metric-card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+}
+
+.metric-icon {
+    background: rgba(0,0,0,0.05);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.metric-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.product-thumb {
+    transition: transform 0.2s ease;
+}
+
+.product-thumb:hover {
+    transform: scale(1.1);
+}
+
+.stars {
+    font-size: 0.8rem;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.card-header {
+    background: rgba(0,0,0,0.02);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+</style>
+
+<script>
+let revenueChart, categoriesChart;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    document.getElementById('periodSelect').addEventListener('change', function() {
+        if (this.value !== 'custom') {
+            updateDateRange(this.value);
+        }
+    });
+}
+
+function updateDateRange(period) {
+    const today = new Date();
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+    
+    endDate.value = today.toISOString().split('T')[0];
+    
+    switch(period) {
+        case 'today':
+            startDate.value = today.toISOString().split('T')[0];
+            break;
+        case 'yesterday':
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            startDate.value = yesterday.toISOString().split('T')[0];
+            endDate.value = yesterday.toISOString().split('T')[0];
+            break;
+        case 'week':
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            startDate.value = weekAgo.toISOString().split('T')[0];
+            break;
+        case 'month':
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            startDate.value = monthAgo.toISOString().split('T')[0];
+            break;
+        case 'quarter':
+            const quarterAgo = new Date(today);
+            quarterAgo.setMonth(quarterAgo.getMonth() - 3);
+            startDate.value = quarterAgo.toISOString().split('T')[0];
+            break;
+        case 'year':
+            const yearAgo = new Date(today);
+            yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+            startDate.value = yearAgo.toISOString().split('T')[0];
+            break;
+    }
+}
+
+function initializeCharts() {
+    // Revenue Trend Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    revenueChart = new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: {{ revenue_labels|tojson }},
+            datasets: [{
+                label: '{{ get_translation("revenue", current_language) }}',
+                data: {{ revenue_data|tojson }},
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₩' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Categories Pie Chart
+    const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+    categoriesChart = new Chart(categoriesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_labels|tojson }},
+            datasets: [{
+                data: {{ category_data|tojson }},
+                backgroundColor: [
+                    '#007bff',
+                    '#28a745',
+                    '#ffc107',
+                    '#dc3545',
+                    '#6f42c1',
+                    '#20c997',
+                    '#fd7e14'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function updateReports() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!startDate || !endDate) {
+        alert('{{ get_translation("please_select_date_range", current_language) }}');
+        return;
+    }
+    
+    // Show loading state
+    showLoadingState();
+    
+    // Make AJAX request to update reports
+    fetch('/api/sales-reports', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            start_date: startDate,
+            end_date: endDate
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateDashboard(data);
+        } else {
+            alert('{{ get_translation("error_loading_reports", current_language) }}');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('{{ get_translation("error_loading_reports", current_language) }}');
+    })
+    .finally(() => {
+        hideLoadingState();
+    });
+}
+
+function showLoadingState() {
+    document.querySelectorAll('.metric-value').forEach(el => {
+        el.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    });
+}
+
+function hideLoadingState() {
+    // Loading state will be replaced by actual data
+}
+
+function updateDashboard(data) {
+    // Update metrics
+    document.getElementById('totalRevenue').textContent = '₩' + data.total_revenue.toLocaleString();
+    document.getElementById('totalOrders').textContent = data.total_orders;
+    document.getElementById('avgOrderValue').textContent = '₩' + data.avg_order_value.toLocaleString();
+    document.getElementById('uniqueCustomers').textContent = data.unique_customers;
+    
+    // Update growth percentages
+    document.getElementById('revenueGrowth').textContent = (data.revenue_growth > 0 ? '+' : '') + data.revenue_growth + '%';
+    document.getElementById('ordersGrowth').textContent = (data.orders_growth > 0 ? '+' : '') + data.orders_growth + '%';
+    document.getElementById('aovGrowth').textContent = (data.aov_growth > 0 ? '+' : '') + data.aov_growth + '%';
+    document.getElementById('customersGrowth').textContent = (data.customers_growth > 0 ? '+' : '') + data.customers_growth + '%';
+    
+    // Update charts
+    revenueChart.data.labels = data.revenue_labels;
+    revenueChart.data.datasets[0].data = data.revenue_data;
+    revenueChart.update();
+    
+    categoriesChart.data.labels = data.category_labels;
+    categoriesChart.data.datasets[0].data = data.category_data;
+    categoriesChart.update();
+}
+
+function refreshReports() {
+    location.reload();
+}
+
+function exportReport(format) {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    const params = new URLSearchParams({
+        format: format,
+        start_date: startDate,
+        end_date: endDate
+    });
+    
+    window.open(`/api/export-sales-report?${params}`, '_blank');
+}
+</script>
+{% endblock %}
